@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>மின்சார நுகர்வோர் போர்டல் | Electricity Consumer Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0a3d62; --navy-dark:#062744; --saffron:#e2711d; --green:#177245;
+  --bg:#f2f5f4; --card:#ffffff; --text:#1b2430; --muted:#5b6b73; --line:#dfe6e3;
+  --danger:#c0392b;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*{box-sizing:inherit;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Noto Sans Tamil','Inter',sans-serif;}
+.eng{font-family:'Inter',sans-serif;}
+header{background:linear-gradient(180deg,var(--navy),var(--navy-dark));color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;padding-top:calc(14px + env(safe-area-inset-top,0px));}
+.emblem{width:42px;height:42px;border-radius:50%;background:var(--saffron);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;flex:none;}
+header h1{font-size:15px;margin:0;line-height:1.35;}
+header h1 small{display:block;font-size:11.5px;color:#cfe0ee;font-weight:400;}
+.lang{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;}
+.lang button{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:5px 9px;font-size:11.5px;cursor:pointer;font-family:inherit;}
+.lang button.active{background:var(--saffron);border-color:var(--saffron);}
+main{max-width:960px;margin:0 auto;padding:20px 16px 60px;}
+
+/* language toggle: Tamil shown by default, English replaces it when selected */
+.t-en{display:none;}
+body.show-en .t-ta{display:none;}
+body.show-en .t-en{display:inline;}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--navy-dark);color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:50;max-width:90%;text-align:center;}
+.toast.show{opacity:1;}
+
+/* Login */
+.login-wrap{display:flex;justify-content:center;padding-top:24px;}
+.login-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:26px 22px;width:100%;max-width:400px;box-shadow:0 2px 10px rgba(10,61,98,.06);}
+.login-card h2{margin:0 0 4px;font-size:18px;}
+.login-card p{margin:0 0 18px;color:var(--muted);font-size:13.5px;}
+label{display:block;font-size:13px;margin:14px 0 6px;color:var(--text);}
+input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:7px;font-size:15px;font-family:inherit;}
+input[type=text]:focus{outline:2px solid var(--saffron);outline-offset:1px;}
+
+.puzzle{margin-top:18px;}
+.puzzle-label{font-size:12.5px;color:var(--muted);margin-bottom:8px;}
+.track{position:relative;height:44px;background:#eef2f1;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+.track-fill{position:absolute;left:0;top:0;bottom:0;background:#d7ecdf;width:0%;}
+.track-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12.5px;color:var(--muted);pointer-events:none;}
+.handle{position:absolute;left:0;top:0;height:44px;width:44px;background:var(--navy);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;cursor:grab;touch-action:none;}
+.handle.ok{background:var(--green);}
+.submit-btn{margin-top:20px;width:100%;padding:12px;background:var(--saffron);color:#fff;border:none;border-radius:7px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;}
+.submit-btn:disabled{background:#c9c9c9;cursor:not-allowed;}
+.err{color:var(--danger);font-size:12.5px;margin-top:8px;min-height:16px;}
+
+/* Dashboard */
+#dashboard{display:none;}
+.top-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.top-row .who{font-size:13.5px;color:var(--muted);}
+.top-row .who b{color:var(--text);}
+.live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:5px;animation:pulse 1.6s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;}
+.card h3{margin:0 0 10px;font-size:13.5px;color:var(--muted);font-weight:600;}
+.big{font-size:26px;font-weight:700;}
+.unit{font-size:13px;color:var(--muted);font-weight:400;}
+.split{display:flex;justify-content:space-between;margin-top:10px;font-size:13px;}
+.split span:last-child{font-weight:600;}
+.loss{color:var(--danger);}
+.consumed{color:var(--green);}
+
+.bar{height:9px;background:#eef2f1;border-radius:5px;overflow:hidden;margin-top:12px;display:flex;}
+.bar .b1{background:var(--green);}
+.bar .b2{background:var(--danger);opacity:.65;}
+
+.bill-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px;}
+.bill-row:last-child{border-bottom:none;}
+.tag{font-size:11px;padding:2px 8px;border-radius:20px;}
+.tag.pending{background:#fdecea;color:var(--danger);}
+.tag.paid{background:#e7f6ec;color:var(--green);}
+
+.alert-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px;}
+.alert-row:last-child{border-bottom:none;}
+.alert-row .dot{width:7px;height:7px;border-radius:50%;background:var(--saffron);margin-top:6px;flex:none;}
+
+.video-card button{margin-top:6px;width:100%;padding:10px;border:1px solid var(--navy);background:#fff;color:var(--navy);border-radius:7px;font-family:inherit;font-size:13.5px;cursor:pointer;}
+.video-langs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.video-langs span{font-size:11.5px;padding:3px 8px;border:1px solid var(--line);border-radius:20px;color:var(--muted);}
+
+footer{text-align:center;color:var(--muted);font-size:11.5px;padding:20px;}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(6,20,32,.55);display:none;align-items:center;justify-content:center;z-index:60;padding:16px;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--card);border-radius:12px;padding:22px;width:100%;max-width:360px;max-height:90vh;overflow-y:auto;}
+.modal-badge{font-size:11px;background:#fff4e8;color:var(--saffron);border:1px solid #f3d9b8;padding:4px 9px;border-radius:20px;display:inline-block;margin-bottom:8px;}
+.pay-amount{font-size:30px;font-weight:700;margin:8px 0 14px;}
+.app-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;}
+.app-btn{padding:9px 4px;border:1px solid var(--line);background:#fff;border-radius:7px;font-family:inherit;font-size:11.5px;cursor:pointer;}
+.app-btn.selected{border-color:var(--navy);background:#eaf1f6;font-weight:600;}
+.cancel-btn{margin-top:8px;width:100%;padding:10px;background:none;border:1px solid var(--line);color:var(--muted);border-radius:7px;font-family:inherit;font-size:13.5px;cursor:pointer;}
+.spinner{width:40px;height:40px;border:4px solid var(--line);border-top-color:var(--navy);border-radius:50%;margin:20px auto 0;animation:spin 0.9s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.tick{width:52px;height:52px;border-radius:50%;background:var(--green);color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center;margin:6px auto 0;}
+.txn-id{font-size:12px;color:var(--muted);font-family:'Inter',sans-serif;margin:4px 0 16px;}
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#0f1416;--card:#161d20;--text:#e7edee;--muted:#93a2a8;--line:#26302f;}
+}
+:root[data-theme="dark"]{--bg:#0f1416;--card:#161d20;--text:#e7edee;--muted:#93a2a8;--line:#26302f;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="emblem">மி</div>
+  <h1><span class="t-ta">தமிழ்நாடு மின்சார வாரியம்</span><span class="t-en eng">Tamil Nadu Electricity Board</span><small class="eng">Consumer Portal (Demo)</small></h1>
+  <div class="lang">
+    <button class="active" data-lang="ta">தமிழ்</button>
+    <button data-lang="en">English</button>
+    <button data-lang="hi">हिं</button>
+    <button data-lang="ml">മല</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- LOGIN -->
+  <div class="login-wrap" id="loginWrap">
+    <div class="login-card">
+      <h2><span class="t-ta">சேவை எண் மூலம் நுழையவும்</span><span class="t-en">Login with service number</span></h2>
+      <p><span class="t-ta">உங்கள் மீட்டர் / சேவை எண்ணை உள்ளிடவும்</span><span class="t-en">Enter your meter / service number</span></p>
+
+      <label><span class="t-ta">மீட்டர் / சேவை எண்</span><span class="t-en">Meter / Service No.</span></label>
+      <input type="text" id="meter" value="011490291863" inputmode="numeric">
+
+      <label><span class="t-ta">பதிவு செய்யப்பட்ட மொபைல் எண்</span><span class="t-en">Registered mobile number</span></label>
+      <input type="text" id="mobile" value="9498128630" inputmode="numeric">
+
+      <div class="puzzle">
+        <div class="puzzle-label"><span class="t-ta">சரிபார்ப்புக்காக பொத்தானை வலதுபுறம் இழுக்கவும்</span><span class="t-en">Drag the button all the way right to verify</span></div>
+        <div class="track" id="track">
+          <div class="track-fill" id="trackFill"></div>
+          <div class="track-text" id="trackText"><span class="t-ta">→ இழுக்கவும்</span><span class="t-en">Slide →</span></div>
+          <div class="handle" id="handle">⇢</div>
+        </div>
+      </div>
+
+      <button class="submit-btn" id="loginBtn" disabled><span class="t-ta">உள்நுழையவும்</span><span class="t-en">Login</span></button>
+      <div class="err" id="loginErr"></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard">
+    <div class="top-row">
+      <div class="who"><span class="live-dot"></span><span class="t-ta">நேரடி புள்ளிவிவரம்</span><span class="t-en">Live data</span> · <span class="t-ta">மீட்டர்:</span><span class="t-en">Meter:</span> <b>011490291863</b></div>
+      <div class="who"><span class="t-ta">இப்போதே புதுப்பிக்கப்பட்டது</span><span class="t-en">Updated just now</span></div>
+    </div>
+
+    <div class="grid">
+
+      <div class="card">
+        <h3><span class="t-ta">இந்த மாதம் — சப்ளை vs உபயோகம் (units)</span><span class="t-en">This month — Supply vs Consumption (units)</span></h3>
+        <div class="big" id="suppliedVal">342 <span class="unit"><span class="t-ta">units அனுப்பப்பட்டது</span><span class="t-en">units supplied</span></span></div>
+        <div class="bar"><div class="b1" style="width:88%"></div><div class="b2" style="width:12%"></div></div>
+        <div class="split"><span><span class="t-ta">உபயோகித்தது</span><span class="t-en">Consumed</span></span><span class="consumed" id="consumedVal">301</span></div>
+        <div class="split"><span><span class="t-ta">இழப்பு / வீணானது</span><span class="t-en">Line loss</span></span><span class="loss" id="lossVal">41</span></div>
+      </div>
+
+      <div class="card">
+        <h3><span class="t-ta">பில் (உபயோகித்த units மட்டும்)</span><span class="t-en">Bill (consumed units only)</span></h3>
+        <div class="big" id="billVal">₹3,120 <span class="unit"><span class="t-ta">தோராயம்</span><span class="t-en">approx.</span></span></div>
+        <div class="split"><span class="eng">Rate applied</span><span class="eng">Govt. slab tariff</span></div>
+        <div class="bill-row" style="margin-top:8px"><span><span class="t-ta">இந்த மாதம்</span><span class="t-en">This month</span></span><span class="tag pending" id="pendingTag"><span class="t-ta">நிலுவை</span><span class="t-en">Pending</span></span></div>
+        <button id="payNowBtn" style="margin-top:10px;width:100%;padding:9px;background:var(--navy);color:#fff;border:none;border-radius:7px;font-family:inherit;font-size:13.5px;cursor:pointer;">💳 <span class="t-ta">UPI மூலம் செலுத்துங்கள்</span><span class="t-en">Pay via UPI</span></button>
+        <div class="bill-row"><span><span class="t-ta">கடந்த மாதம்</span><span class="t-en">Last month</span> — ₹3,000</span><span class="tag paid"><span class="t-ta">செலுத்தப்பட்டது</span><span class="t-en">Paid</span></span></div>
+        <div class="bill-row"><span><span class="t-ta">அதற்கு முந்தைய மாதம்</span><span class="t-en">Month before</span> — ₹2,000</span><span class="tag paid"><span class="t-ta">செலுத்தப்பட்டது</span><span class="t-en">Paid</span></span></div>
+      </div>
+
+      <div class="card">
+        <h3><span class="t-ta">மின் தடை / ஏற்ற இறக்கம்</span><span class="t-en">Outages &amp; fluctuation</span></h3>
+        <div class="alert-row"><div class="dot"></div><div><span class="t-ta">3 முறை power shutdown இந்த மாதம் · தோராயம் 6 units இழப்பு</span><span class="t-en">3 power shutdowns this month · approx. 6 units lost</span></div></div>
+        <div class="alert-row"><div class="dot"></div><div><span class="t-ta">2 high-voltage fluctuation நிகழ்வுகள் பதிவு</span><span class="t-en">2 high-voltage fluctuation events recorded</span></div></div>
+        <div class="alert-row"><div class="dot"></div><div><span class="t-ta">Earthing/grounding தொந்தரவு இழப்பு: ~2 units</span><span class="t-en">Earthing/grounding disturbance loss: ~2 units</span></div></div>
+      </div>
+
+      <div class="card video-card">
+        <h3><span class="t-ta">பில் கட்டுவது எப்படி?</span><span class="t-en">How to pay your bill</span></h3>
+        <p style="margin:0 0 10px;font-size:12.5px;color:var(--muted)"><span class="t-ta">குரல் மூலம் கேளுங்கள், படிக்க வேண்டாம்.</span><span class="t-en">Listen by voice, no reading needed.</span></p>
+        <select id="videoLang">
+          <option value="ta">தமிழ் — Tamil</option>
+          <option value="en">English</option>
+          <option value="hi">हिंदी — Hindi</option>
+          <option value="ml">മലയാളം — Malayalam</option>
+          <option value="kn">ಕನ್ನಡ — Kannada</option>
+          <option value="ur">اردو — Urdu</option>
+          <option value="tcy">Tulu (captions only)</option>
+        </select>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button id="playBtn" style="margin-top:0;">▶ <span class="t-ta">கேளுங்கள்</span><span class="t-en">Play audio</span></button>
+          <button id="stopBtn" style="margin-top:0;">■ <span class="t-ta">நிறுத்து</span><span class="t-en">Stop</span></button>
+        </div>
+        <ol id="stepsList" style="margin:12px 0 0;padding-left:18px;font-size:13px;line-height:1.7;"></ol>
+        <div id="audioNote" style="font-size:11.5px;color:var(--muted);margin-top:8px;"></div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+<footer><span class="t-ta">Hackathon demo — சேவை தரவுகள் மாதிரிக்காக மட்டுமே</span><span class="t-en">Hackathon demo — sample data for demo purposes only</span></footer>
+
+<div class="modal-overlay" id="payOverlay">
+  <div class="modal">
+    <div id="payScreen1">
+      <div class="modal-badge"><span class="t-ta">டெமோ கட்டணம் — உண்மையான பணம் செல்லாது</span><span class="t-en">Demo payment — no real money moves</span></div>
+      <h3 style="margin:4px 0 2px;"><span class="t-ta">UPI மூலம் செலுத்துங்கள்</span><span class="t-en">Pay via UPI</span></h3>
+      <div class="pay-amount">₹<span id="payAmount">3,120</span></div>
+      <div class="app-row">
+        <button class="app-btn" data-app="Google Pay">G Pay</button>
+        <button class="app-btn" data-app="PhonePe">PhonePe</button>
+        <button class="app-btn" data-app="Paytm">Paytm</button>
+        <button class="app-btn" data-app="BHIM">BHIM</button>
+      </div>
+      <label><span class="t-ta">UPI ஐடி</span><span class="t-en">UPI ID</span></label>
+      <input type="text" id="upiId" placeholder="yourname@upi">
+      <div class="err" id="upiErr"></div>
+      <button class="submit-btn" id="upiPayBtn"><span class="t-ta">பணம் செலுத்துங்கள்</span><span class="t-en">Pay now</span></button>
+      <button class="cancel-btn" id="payCancel"><span class="t-ta">ரத்து செய்</span><span class="t-en">Cancel</span></button>
+    </div>
+    <div id="payScreen2" style="display:none;text-align:center;">
+      <div class="spinner"></div>
+      <p style="margin-top:14px;font-size:13.5px;color:var(--muted);"><span class="t-ta">உங்கள் வங்கியுடன் சரிபார்க்கிறோம்…</span><span class="t-en">Confirming with your bank…</span></p>
+    </div>
+    <div id="payScreen3" style="display:none;text-align:center;">
+      <div class="tick">✓</div>
+      <h3 style="margin:8px 0 2px;"><span class="t-ta">பணம் செலுத்தப்பட்டது</span><span class="t-en">Payment successful</span></h3>
+      <div class="pay-amount" style="font-size:22px;">₹<span id="payAmountDone">3,120</span></div>
+      <p class="txn-id" id="txnId"></p>
+      <button class="submit-btn" id="payDone"><span class="t-ta">முடிந்தது</span><span class="t-en">Done</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// slider verification
+const handle = document.getElementById('handle');
+const track = document.getElementById('track');
+const fill = document.getElementById('trackFill');
+const trackText = document.getElementById('trackText');
+const loginBtn = document.getElementById('loginBtn');
+let dragging = false, verified = false;
+
+function maxX(){ return track.clientWidth - handle.clientWidth; }
+
+function setX(x){
+  x = Math.max(0, Math.min(x, maxX()));
+  handle.style.left = x + 'px';
+  const pct = (x / maxX()) * 100;
+  fill.style.width = pct + '%';
+  if(pct > 92 && !verified){
+    verified = true;
+    handle.classList.add('ok');
+    trackText.innerHTML = '<span class="t-ta">✓ சரிபார்க்கப்பட்டது</span><span class="t-en">✓ Verified</span>';
+    loginBtn.disabled = false;
+  }
+}
+
+function start(){ dragging = true; }
+function move(e){
+  if(!dragging || verified) return;
+  const rect = track.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  setX(clientX - rect.left - handle.clientWidth/2);
+}
+function end(){ dragging = false; if(!verified) setX(0); }
+
+handle.addEventListener('mousedown', start);
+handle.addEventListener('touchstart', start, {passive:true});
+window.addEventListener('mousemove', move);
+window.addEventListener('touchmove', move, {passive:true});
+window.addEventListener('mouseup', end);
+window.addEventListener('touchend', end);
+
+loginBtn.addEventListener('click', () => {
+  const meter = document.getElementById('meter').value.trim();
+  const mobile = document.getElementById('mobile').value.trim();
+  if(meter.length < 6 || mobile.length < 10){
+    document.getElementById('loginErr').textContent = 'சரியான மீட்டர் எண் மற்றும் மொபைல் எண்ணை உள்ளிடவும்.';
+    return;
+  }
+  document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  startLiveUpdates();
+});
+
+// Live-looking updates: dashboard loads with real sample values immediately,
+// then nudges slightly every few seconds to feel "live".
+function startLiveUpdates(){
+  let consumed = 301, loss = 41;
+  setInterval(() => {
+    consumed += Math.round(Math.random()*2*10)/10;
+    loss += Math.round(Math.random()*1*10)/10;
+    const supplied = consumed + loss;
+    const bill = Math.round(consumed * 7.2 + 150);
+    document.getElementById('consumedVal').textContent = consumed.toFixed(1);
+    document.getElementById('lossVal').textContent = loss.toFixed(1);
+    document.getElementById('suppliedVal').childNodes[0].nodeValue = supplied.toFixed(1) + ' ';
+    document.getElementById('billVal').childNodes[0].nodeValue = '₹' + bill.toLocaleString('en-IN') + ' ';
+  }, 1000);
+}
+
+// bill-payment steps, translated, spoken with the device's built-in text-to-speech
+const stepText = {
+  ta: ["மீட்டர் அல்லது சேவை எண்ணை உள்ளிடவும்.","இந்த மாத பில் தொகையை பாருங்கள்.","\u201cஇப்போது செலுத்து\u201d பொத்தானை தட்டவும்.","UPI அல்லது கார்டை தேர்வு செய்யவும்.","உறுதிப்படுத்தி பணத்தை செலுத்துங்கள்."],
+  en: ["Enter your meter or service number.","Check this month's bill amount.","Tap the \u201cPay Now\u201d button.","Choose UPI or card.","Confirm and complete the payment."],
+  hi: ["अपना मीटर या सेवा नंबर डालें।","इस महीने का बिल राशि देखें।","\u201cअभी भुगतान करें\u201d बटन दबाएं।","UPI या कार्ड चुनें।","भुगतान की पुष्टि करें।"],
+  ml: ["നിങ്ങളുടെ മീറ്റർ അല്ലെങ്കിൽ സേവന നമ്പർ നൽകുക.","ഈ മാസത്തെ ബിൽ തുക പരിശോധിക്കുക.","\u201cഇപ്പോൾ അടയ്ക്കുക\u201d ബട്ടൺ അമർത്തുക.","UPI അല്ലെങ്കിൽ കാർഡ് തിരഞ്ഞെടുക്കുക.","പണമടയ്ക്കൽ സ്ഥിരീകരിക്കുക."],
+  kn: ["ನಿಮ್ಮ ಮೀಟರ್ ಅಥವಾ ಸೇವಾ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ.","ಈ ತಿಂಗಳ ಬಿಲ್ ಮೊತ್ತವನ್ನು ಪರಿಶೀಲಿಸಿ.","\u201cಈಗ ಪಾವತಿಸಿ\u201d ಬಟನ್ ಒತ್ತಿ.","UPI ಅಥವಾ ಕಾರ್ಡ್ ಆಯ್ಕೆಮಾಡಿ.","ಪಾವತಿಯನ್ನು ಖಚಿತಪಡಿಸಿ."],
+  ur: ["اپنا میٹر یا سروس نمبر درج کریں۔","اس مہینے کے بل کی رقم چیک کریں۔","\u201cابھی ادائیگی کریں\u201d بٹن دبائیں۔","UPI یا کارڈ منتخب کریں۔","ادائیگی کی تصدیق کریں۔"],
+  tcy: ["ನಿಮ್ಮ ಮೀಟರ್ ನಂಬರ್ ಪಾಡುಲೆ.","ಈ ತಿಂಗೊಲಾ ಬಿಲ್ ಮೊತ್ತ ತೂಲೆ.","\u201cಈಗ ಕಟ್ಟುಲೆ\u201d ಬಟನ್ ದೀಲೆ.","UPI ಇಜ್ಜಿಂದ್ ಕಾರ್ಡ್ ಆಯ್ಕೆ ಮಲ್ಪುಲೆ.","ಕಟ್ಟುನೆನ್ ಖಚಿತ ಮಲ್ಪುಲೆ."]
+};
+const ttsLang = {ta:'ta-IN', en:'en-IN', hi:'hi-IN', ml:'ml-IN', kn:'kn-IN', ur:'ur-PK'};
+const videoLangSel = document.getElementById('videoLang');
+const stepsList = document.getElementById('stepsList');
+const audioNote = document.getElementById('audioNote');
+let voicesCache = [];
+
+function loadVoices(){ voicesCache = window.speechSynthesis ? window.speechSynthesis.getVoices() : []; }
+if('speechSynthesis' in window){
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function renderSteps(lang){
+  stepsList.innerHTML = stepText[lang].map((s,i) => '<li id="step'+i+'">'+s+'</li>').join('');
+  if(lang === 'tcy'){
+    audioNote.textContent = 'Tulu has no text-to-speech voice on phones/browsers yet, so this shows captions only (best-effort script, no audio).';
+  } else if(!('speechSynthesis' in window)){
+    audioNote.textContent = 'This device/browser does not support voice playback — showing captions instead.';
+  } else {
+    const hasVoice = voicesCache.some(v => v.lang && v.lang.toLowerCase().startsWith(lang));
+    audioNote.textContent = hasVoice ? '' : 'Your device may not have a ' + lang.toUpperCase() + ' voice installed — playback quality depends on your phone/browser.';
+  }
+}
+renderSteps('ta');
+videoLangSel.addEventListener('change', () => { stopNarration(); renderSteps(videoLangSel.value); });
+
+function pickVoice(langCode){
+  return voicesCache.find(v => v.lang && v.lang.toLowerCase() === langCode.toLowerCase())
+      || voicesCache.find(v => v.lang && v.lang.toLowerCase().startsWith(langCode.split('-')[0]));
+}
+
+let stepIndex = 0, speaking = false;
+function speakStep(lang){
+  const lines = stepText[lang];
+  if(stepIndex >= lines.length){ speaking = false; return; }
+  document.querySelectorAll('#stepsList li').forEach(li => li.style.color = '');
+  const li = document.getElementById('step'+stepIndex);
+  if(li) li.style.color = 'var(--saffron)';
+  const utter = new SpeechSynthesisUtterance(lines[stepIndex]);
+  const code = ttsLang[lang];
+  utter.lang = code;
+  const v = pickVoice(code);
+  if(v) utter.voice = v;
+  utter.onend = () => { stepIndex++; if(speaking) speakStep(lang); };
+  window.speechSynthesis.speak(utter);
+}
+function stopNarration(){
+  speaking = false;
+  stepIndex = 0;
+  if('speechSynthesis' in window) window.speechSynthesis.cancel();
+  document.querySelectorAll('#stepsList li').forEach(li => li.style.color = '');
+}
+document.getElementById('playBtn').addEventListener('click', () => {
+  const lang = videoLangSel.value;
+  if(lang === 'tcy' || !('speechSynthesis' in window)){
+    showToast(lang === 'tcy' ? 'No Tulu voice available yet — read the steps above.' : 'Voice playback not supported on this device.');
+    return;
+  }
+  stopNarration();
+  speaking = true;
+  speakStep(lang);
+});
+document.getElementById('stopBtn').addEventListener('click', stopNarration);
+
+// UPI payment simulation (demo only — no real gateway, no real money moves)
+const payOverlay = document.getElementById('payOverlay');
+const payNowBtn = document.getElementById('payNowBtn');
+const upiIdInput = document.getElementById('upiId');
+const upiErr = document.getElementById('upiErr');
+let selectedApp = null;
+
+function currentBillAmount(){
+  return document.getElementById('billVal').childNodes[0].nodeValue.trim().replace('₹','');
+}
+function showPayScreen(n){
+  document.getElementById('payScreen1').style.display = n===1 ? 'block':'none';
+  document.getElementById('payScreen2').style.display = n===2 ? 'block':'none';
+  document.getElementById('payScreen3').style.display = n===3 ? 'block':'none';
+}
+payNowBtn.addEventListener('click', () => {
+  document.getElementById('payAmount').textContent = currentBillAmount();
+  upiIdInput.value = '';
+  upiErr.textContent = '';
+  selectedApp = null;
+  document.querySelectorAll('.app-btn').forEach(b => b.classList.remove('selected'));
+  showPayScreen(1);
+  payOverlay.classList.add('show');
+});
+document.getElementById('payCancel').addEventListener('click', () => payOverlay.classList.remove('show'));
+document.querySelectorAll('.app-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.app-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedApp = btn.dataset.app;
+    if(!upiIdInput.value) upiIdInput.value = 'yourname@' + btn.dataset.app.toLowerCase().replace(/\s/g,'');
+  });
+});
+document.getElementById('upiPayBtn').addEventListener('click', () => {
+  const id = upiIdInput.value.trim();
+  if(!/^[\w.\-]{2,}@[a-zA-Z]{2,}$/.test(id)){
+    upiErr.textContent = 'Enter a valid UPI ID, e.g. yourname@upi';
+    return;
+  }
+  upiErr.textContent = '';
+  showPayScreen(2);
+  setTimeout(() => {
+    const amt = currentBillAmount();
+    document.getElementById('payAmountDone').textContent = amt;
+    const txn = 'DEMO' + Date.now().toString().slice(-10);
+    document.getElementById('txnId').innerHTML = 'Txn ID: ' + txn + '<br>' + new Date().toLocaleString('en-IN');
+    showPayScreen(3);
+    const tag = document.getElementById('pendingTag');
+    tag.className = 'tag paid';
+    tag.innerHTML = '<span class="t-ta">செலுத்தப்பட்டது</span><span class="t-en">Paid</span>';
+    payNowBtn.style.display = 'none';
+  }, 1600);
+});
+document.getElementById('payDone').addEventListener('click', () => payOverlay.classList.remove('show'));
+
+// language switching
+const langButtons = document.querySelectorAll('.lang button');
+let toastTimer = null;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+const comingSoon = {
+  hi: 'हिंदी अनुवाद जल्द ही आ रहा है — Hindi translation coming soon',
+  ml: 'മലയാളം വിവർത്തനം ഉടൻ വരുന്നു — Malayalam translation coming soon'
+};
+langButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const lang = btn.dataset.lang;
+    if(lang === 'ta' || lang === 'en'){
+      langButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.body.classList.toggle('show-en', lang === 'en');
+    } else {
+      showToast(comingSoon[lang] || 'Translation coming soon');
+    }
+  });
+});
+</script>
+</body>
+</html>
